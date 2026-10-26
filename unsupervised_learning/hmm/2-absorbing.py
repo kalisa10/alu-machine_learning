@@ -1,39 +1,30 @@
 #!/usr/bin/env python3
-""" Absorbing Markov chain"""
+"""Absorbing Markov chain"""
 
 import numpy as np
 
 
 def absorbing(P):
     """
-    Function that determines if a markov chain is absorbing
+    Determines if a Markov chain is absorbing
     Args:
-        P: 2D numpy.ndarray of shape (n, n) representing the transition matrix
-           P[i, j]: is the probability of transitioning from state i to state j
-           n: the number of states in the markov chain
-    Returns: True if it is absorbing, or False on failure
+        P: numpy.ndarray of shape (n, n) representing the transition matrix
+           P[i, j] is the probability of transitioning from state i to j
+    Returns: True if it is absorbing, False if not, None on failure
     """
-    if len(P.shape) != 2:
+    if not isinstance(P, np.ndarray) or len(P.shape) != 2:
         return None
-    n1, n2 = P.shape
-    if (n1 != n2) or type(P) is not np.ndarray:
+    n = P.shape[0]
+    if P.shape[1] != n:
         return None
-    D = np.diagonal(P)
-    if (D == 1).all():
-        return True
-    if not (D == 1).any():
-        return False
 
-    # formula t=(I-Q)^-1 1
-    # approach using Neumman series: t = (∑ inf k=0 * Q^k) * 1
-    # suggested implementation based on: https://stackoverflow.com/
-    # questions/45164505/best-iterative-way-to-calculate-the-fundamental-matrix-
-    # of-an-absorbing-markov-ch
-    for i in range(n1):
-        # print('this is Pi {}'.format(P[i]))
-        for j in range(n2):
-            # print('this is Pj {}'.format(P[j]))
-            if (i == j) and (i + 1 < len(P)):
-                if P[i + 1][j] == 0 and P[i][j + 1] == 0:
-                    return False
-    return True
+    stay = np.diagonal(P) == 1
+    if not stay.any():
+        return False
+    if stay.all():
+        return True
+
+    # reach[i, j] > 0 when state j can be reached from state i
+    step = np.eye(n) + (P > 0)
+    reach = np.linalg.matrix_power(step, n) > 0
+    return bool(reach[:, stay].any(axis=1).all())
