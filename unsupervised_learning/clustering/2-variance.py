@@ -6,12 +6,11 @@ import numpy as np
 
 def variance(X, C):
     """
-    Calculate the total intra-cluste variance for a data set
+    Calculates the total intra-cluster variance of a dataset
     Args:
-        X: numpy.ndarray of shape (n, d) containing the data set
+        X: numpy.ndarray of shape (n, d) containing the dataset
         C: numpy.ndarray of shape (k, d) containing the centroid means
-           for each cluster
-    Returns: Var or None on failure
+    Returns: var, the total variance, or None on failure
     """
     if not isinstance(X, np.ndarray) or len(X.shape) != 2:
         return None
@@ -20,14 +19,5 @@ def variance(X, C):
     if X.shape[1] != C.shape[1]:
         return None
 
-    n, d = X.shape
-
-    # distances also know as euclidean distance
-    centroids_extended = C[:, np.newaxis]
-    distances = np.sqrt(((X - centroids_extended) ** 2).sum(axis=2))
-    min_distances = np.min(distances, axis=0)
-
-    # W=∑k=1K∑xi∈Ck∥xi−x¯k∥2
-    variance = np.sum(min_distances ** 2)
-
-    return variance
+    dist = np.linalg.norm(X[:, None] - C[None], axis=2)
+    return np.sum(np.min(dist, axis=1) ** 2)

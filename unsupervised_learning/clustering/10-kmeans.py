@@ -1,24 +1,19 @@
 #!/usr/bin/env python3
-"""K-means using scikit learn"""
+"""K-means with sklearn"""
 
 import sklearn.cluster
 
 
 def kmeans(X, k):
     """
-    performs K-means on a dataset
+    Performs K-means on a dataset
     Args:
         X: numpy.ndarray of shape (n, d) containing the dataset
-        k: number of clusters
+        k: the number of clusters
     Returns: C, clss
-             C: numpy.ndarray of shape (k, d) containing the centroid
-                means for each cluster
-             clss: numpy.ndarray of shape (n,) containing the index of
-                   the cluster in C that each data point belongs to
+        C: numpy.ndarray of shape (k, d) with the centroid means
+        clss: numpy.ndarray of shape (n,) with the cluster index of
+              each data point
     """
-    k_mean = sklearn.cluster.KMeans(n_clusters=k)
-    k_mean.fit(X)
-    clss = k_mean.labels_
-    C = k_mean.cluster_centers_
-
-    return C, clss
+    model = sklearn.cluster.KMeans(n_clusters=k).fit(X)
+    return model.cluster_centers_, model.labels_

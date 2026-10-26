@@ -1,51 +1,43 @@
 #!/usr/bin/env python3
-"""Optimum K method aka inversed elbow"""
+"""Optimize k"""
 
 import numpy as np
+
 kmeans = __import__('1-kmeans').kmeans
 variance = __import__('2-variance').variance
 
 
 def optimum_k(X, kmin=1, kmax=None, iterations=1000):
     """
-    Optimun K method with variance
+    Tests the optimum number of clusters by variance
     Args:
-        X: numpy.ndarray of shape (n, d) containing the data set
-        kmin: positive integer containing the minimum number of
-              clusters to check for (inclusive)
-        kmax: positive integer containing the maximum number of
-              clusters to check for (inclusive)
-        iterations: positive integer containing the maximum number
-                    of iterations for K-means
+        X: numpy.ndarray of shape (n, d) containing the dataset
+        kmin: positive integer, the minimum number of clusters to check
+        kmax: positive integer, the maximum number of clusters to check
+        iterations: positive integer, the maximum number of iterations
     Returns: results, d_vars, or None, None on failure
-             results: list containing the outputs of K-means for
-                     each cluster size
-             d_vars: list containing the difference in variance from
-                     the smallest cluster size for each cluster size
+        results: list of the outputs of K-means per cluster size
+        d_vars: list of the difference in variance from the smallest
+                cluster size per cluster size
     """
-    try:
-        if not isinstance(X, np.ndarray) or len(X.shape) != 2:
-            return None, None
-        if not isinstance(iterations, int) or iterations < 1:
-            return None, None
-        if kmax is not None and (type(kmax) is not int or kmax < 1):
-            return None, None
-        if kmax is not None and kmin >= kmax:
-            return None, None
-        if kmax is None:
-            kmax = X.shape[0]
-        if not isinstance(kmin, int) or kmin < 1 or kmin >= X.shape[0]:
-            return None, None
-
-        results = []
-        d_vars = []
-        for k in range(kmin, kmax + 1):
-            cluster, clss = kmeans(X, k, iterations)
-            results.append((cluster, clss))
-            variance_d = variance(X, cluster)
-            if k == kmin:
-                variance_k = variance_d
-            d_vars.append(variance_k - variance_d)
-        return results, d_vars
-    except Exception:
+    if not isinstance(X, np.ndarray) or len(X.shape) != 2:
         return None, None
+    if kmax is None:
+        kmax = X.shape[0]
+    if not isinstance(kmin, int) or kmin <= 0:
+        return None, None
+    if not isinstance(kmax, int) or kmax <= 0 or kmax <= kmin:
+        return None, None
+    if not isinstance(iterations, int) or iterations <= 0:
+        return None, None
+
+    results = []
+    d_vars = []
+    for k in range(kmin, kmax + 1):
+        C, clss = kmeans(X, k, iterations)
+        results.append((C, clss))
+        var = variance(X, C)
+        if k == kmin:
+            first = var
+        d_vars.append(first - var)
+    return results, d_vars
